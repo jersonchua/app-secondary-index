@@ -3,9 +3,9 @@ package com.jersonchua.secondaryindex
 /**
  * @param T the type of the primary key
  * @property lookupPrimaryIndices function type that accepts field name and value, and it should return
- *      Result.Success with primary indices if field and value are in the index
- *      Result.Success with empty primary indices if field is in the index but the value is not
- *      Result.Failed if the field is not in the index, or if an error occurs
+ *      [Success][com.jersonchua.secondaryindex.Result.Success] with primary indices if field and value are in the index
+ *      [Success][com.jersonchua.secondaryindex.Result.Success] with empty primary indices if field is in the index but the value is not
+ *      [Failed][com.jersonchua.secondaryindex.Result.Failed] if the field is not in the index, or if an error occurs
  */
 class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, Any?) -> Result<T>) {
     fun computePrimaryIndices(condition: Condition): Result<T> {
