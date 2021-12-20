@@ -62,10 +62,11 @@ internal class PrimaryIndexCalculatorTest {
     @Test
     fun testOr() {
         val condition = Or(
-            Equals("color", "silver")
+            Equals("color", "silver"),
+            Equals("color", "black"),
         )
         val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf(2)), result)
+        assertEquals(Result.Success(setOf(2, 4)), result)
     }
 
     @Test
