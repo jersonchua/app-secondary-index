@@ -36,8 +36,8 @@ internal class PrimaryIndexCalculatorTest {
             Equals("make", "Toyota"),
             UnsupportedCondition
         )
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf(5)), result)
+        assertEquals(Result.Success(setOf(5)), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>(), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     @Test
@@ -101,6 +101,7 @@ internal class PrimaryIndexCalculatorTest {
         private val indexedFields = listOf("color", "make")
         private val invertedMap = indexedFields.flatMap { createInvertedMap(it, cars).toList() }.toMap()
         private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId)
+        private val strictPrimaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId, strict = true)
 
         private fun lookupCarId(fieldName:String, value: Any?): Result<Int> {
             return if (indexedFields.contains(fieldName)) {

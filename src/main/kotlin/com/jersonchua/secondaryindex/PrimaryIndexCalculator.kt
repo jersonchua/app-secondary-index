@@ -6,8 +6,12 @@ package com.jersonchua.secondaryindex
  *      [Success][com.jersonchua.secondaryindex.Result.Success] with primary indices if field and value are in the index
  *      [Success][com.jersonchua.secondaryindex.Result.Success] with empty primary indices if field is in the index but the value is not
  *      [Failed][com.jersonchua.secondaryindex.Result.Failed] if the field is not in the index, or if an error occurs
+ * @property strict if true, all fields in the conditions must be in the index, and errors are not tolerated. TODO add more details
  */
-class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, Any?) -> Result<T>) {
+class PrimaryIndexCalculator<out T>(
+    private val lookupPrimaryIndices: (String, Any?) -> Result<T>,
+    private val strict: Boolean = false
+) {
     fun computePrimaryIndices(condition: Condition): Result<T> {
         return when (condition) {
             is Equals -> lookupPrimaryIndices(condition.fieldName, condition.value)
@@ -33,10 +37,12 @@ class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, A
     }
 
     private fun computePrimaryIndices(and: And): Result<T> {
-        val successes = and.conditions.map { computePrimaryIndices(it) }.filterIsInstance<Result.Success<T>>()
-        return if (successes.isEmpty()) {
+        val results = and.conditions.map { computePrimaryIndices(it) }
+        val failed = results.filterIsInstance<Result.Failed<T>>()
+        return if ((failed.size == results.size) || (strict and failed.isNotEmpty())) {
             Result.Failed()
         } else {
+            val successes = results.filterIsInstance<Result.Success<T>>()
             val primaryIndices =
                 successes.map { it.primaryIndices }.reduce { cumulativePrimaryIndices, primaryIndices ->
                     cumulativePrimaryIndices.intersect(primaryIndices)
