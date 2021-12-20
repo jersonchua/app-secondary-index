@@ -122,7 +122,9 @@ internal class PrimaryIndexCalculatorTest {
         )
 
         private val indexedFields = listOf("color", "make")
-        private val invertedMap = indexedFields.flatMap { createInvertedMap(it, cars).toList() }.toMap()
+        private val invertedMap =
+            indexedFields.flatMap { createMapping(it, cars) }.groupBy({ it.first }, { it.second })
+                .mapValues { it.value.toSet() }
         private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId)
         private val strictPrimaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId, strict = true)
 
@@ -135,13 +137,11 @@ internal class PrimaryIndexCalculatorTest {
             }
         }
 
-        private fun createInvertedMap(fieldName: String, cars: List<Car>): Map<String, Set<Int>> {
-            return cars.map {
-                val field = Car::class.java.getDeclaredField(fieldName)
-                field.isAccessible = true
-                val fieldValue = field.get(it)
-                "$fieldName:$fieldValue" to it.id
-            }.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
+        private fun createMapping(fieldName: String, cars: List<Car>) = cars.map {
+            val field = Car::class.java.getDeclaredField(fieldName)
+            field.isAccessible = true
+            val fieldValue = field.get(it)
+            "$fieldName:$fieldValue" to it.id
         }
     }
 }
