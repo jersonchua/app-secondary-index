@@ -1,6 +1,7 @@
 package com.jersonchua.secondaryindex
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -17,7 +18,7 @@ internal class PrimaryIndexCalculatorTest {
     @Test
     fun testEqualsWhereFieldNotIndexed() {
         val condition = Equals("location", "Rockaway")
-        assertEquals(Result.Failed<Int>(), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>("location is not indexed"), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     @Test
@@ -32,7 +33,6 @@ internal class PrimaryIndexCalculatorTest {
             Equals("color", "blue"),
             Equals("make", "Toyota")
         )
-
         assertEquals(Result.Success(setOf(5)), primaryKeyCalculator.computePrimaryIndices(condition))
         assertEquals(Result.Success(setOf(5)), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
@@ -44,12 +44,11 @@ internal class PrimaryIndexCalculatorTest {
     fun testAndWhereAtLeast1Failed() {
         val condition = And(
             Equals("color", "blue"),
-            UnsupportedCondition // simulating Equals("make", "Toyota") where make is not in the index or an error has occurred while handling it
+            Equals("location", "Edgewater")
         )
-
-        // in none-strict mode, the calculator can yield false positive i.e. Car with id 6 does not have make=Toyota
+        // in none-strict mode, the calculator can yield false positive i.e. Car(6, "blue", "Honda", "Jersey City")
         assertEquals(Result.Success(setOf(5, 6)), primaryKeyCalculator.computePrimaryIndices(condition))
-        assertEquals(Result.Failed<Int>(), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>("location is not indexed"), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     /**
@@ -60,8 +59,8 @@ internal class PrimaryIndexCalculatorTest {
         val condition = And(
             Equals("location", "Rockaway")
         )
-        assertEquals(Result.Failed<Int>(), primaryKeyCalculator.computePrimaryIndices(condition))
-        assertEquals(Result.Failed<Int>(), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>("location is not indexed"), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>("location is not indexed"), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     /**
@@ -95,8 +94,7 @@ internal class PrimaryIndexCalculatorTest {
             Equals("color", "blue"),
             UnsupportedCondition
         )
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Failed<Int>(), result)
+        assertEquals(Result.Failed<Int>(), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     /**
@@ -133,7 +131,7 @@ internal class PrimaryIndexCalculatorTest {
                 val key = createdInvertedMapKey(fieldName, fieldValue)
                 Result.Success(invertedMap.getOrDefault(key, setOf()))
             } else {
-                Result.Failed()
+                Result.Failed("$fieldName is not indexed")
             }
         }
 
@@ -149,4 +147,3 @@ internal class PrimaryIndexCalculatorTest {
 }
 
 data class Car(val id: Int, val color: String, val make: String, val location: String)
-

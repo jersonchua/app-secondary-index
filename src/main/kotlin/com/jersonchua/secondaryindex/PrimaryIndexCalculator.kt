@@ -24,10 +24,11 @@ class PrimaryIndexCalculator<out T>(
 
     private fun computePrimaryIndices(or: Or): Result<T> {
         val results = or.conditions.map { computePrimaryIndices(it) }
-        return if (results.filterIsInstance<Result.Failed<T>>().isNotEmpty()) {
-            Result.Failed()
+        val (successes, failed, _) = results.partitionByTypes<Result.Success<T>, Result.Failed<T>, Result<T>>()
+
+        return if (failed.isNotEmpty()) {
+            Result.Failed(*failed.flatMap { it.reasons.toList() }.toTypedArray())
         } else {
-            val successes = results.filterIsInstance<Result.Success<T>>()
             val primaryIndices =
                 successes.map { it.primaryIndices }.reduce { cumulativePrimaryIndices, primaryIndices ->
                     cumulativePrimaryIndices.union(primaryIndices)
@@ -38,11 +39,11 @@ class PrimaryIndexCalculator<out T>(
 
     private fun computePrimaryIndices(and: And): Result<T> {
         val results = and.conditions.map { computePrimaryIndices(it) }
-        val failed = results.filterIsInstance<Result.Failed<T>>()
+        val (successes, failed, _) = results.partitionByTypes<Result.Success<T>, Result.Failed<T>, Result<T>>()
+
         return if ((failed.size == results.size) || (strict && failed.isNotEmpty())) {
-            Result.Failed()
+            Result.Failed(*failed.flatMap { it.reasons.toList() }.toTypedArray())
         } else {
-            val successes = results.filterIsInstance<Result.Success<T>>()
             val primaryIndices =
                 successes.map { it.primaryIndices }.reduce { cumulativePrimaryIndices, primaryIndices ->
                     cumulativePrimaryIndices.intersect(primaryIndices)
@@ -54,6 +55,25 @@ class PrimaryIndexCalculator<out T>(
 
 sealed interface Result<out T> {
     data class Success<out T>(val primaryIndices: Set<T>) : Result<T>
-    data class Failed<out T>(val reason: String? = null) : Result<T>
+    class Failed<out T>(vararg val reasons: String) : Result<T> {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Failed<*>
+
+            if (!reasons.contentEquals(other.reasons)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return reasons.contentHashCode()
+        }
+
+        override fun toString(): String {
+            return "Failed(reasons=${reasons.contentToString()})"
+        }
+    }
 }
 
