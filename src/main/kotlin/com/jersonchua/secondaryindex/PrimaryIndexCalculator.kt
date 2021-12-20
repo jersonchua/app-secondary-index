@@ -39,7 +39,7 @@ class PrimaryIndexCalculator<out T>(
     private fun computePrimaryIndices(and: And): Result<T> {
         val results = and.conditions.map { computePrimaryIndices(it) }
         val failed = results.filterIsInstance<Result.Failed<T>>()
-        return if ((failed.size == results.size) || (strict and failed.isNotEmpty())) {
+        return if ((failed.size == results.size) || (strict && failed.isNotEmpty())) {
             Result.Failed()
         } else {
             val successes = results.filterIsInstance<Result.Success<T>>()
