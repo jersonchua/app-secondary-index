@@ -6,23 +6,23 @@ sealed interface Condition
 
 object UnsupportedCondition : Condition
 
-data class EqualsCondition(val fieldName: String, val value: Any?) : Condition
+data class Equals(val fieldName: String, val value: Any?) : Condition
 
-data class InCondition(val fieldName: String, val values: List<Any?>) : Condition {
+data class In(val fieldName: String, val values: List<Any?>) : Condition {
     init {
         require(values.isNotEmpty())
     }
 
-    fun toOrCondition() = OrCondition(values.map { EqualsCondition(fieldName, it) })
+    fun toOr() = Or(values.map { Equals(fieldName, it) })
 }
 
-data class AndCondition(val conditions: List<Condition>) : Condition {
+data class And(val conditions: List<Condition>) : Condition {
     init {
         require(conditions.isNotEmpty())
     }
 }
 
-data class OrCondition(val conditions: List<Condition>) : Condition {
+data class Or(val conditions: List<Condition>) : Condition {
     init {
         require(conditions.isNotEmpty())
     }

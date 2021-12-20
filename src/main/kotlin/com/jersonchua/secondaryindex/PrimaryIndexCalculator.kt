@@ -12,16 +12,16 @@ package com.jersonchua.secondaryindex
 class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, Any?) -> Result<T>) {
     fun computePrimaryIndices(condition: Condition): Result<T> {
         return when (condition) {
-            is EqualsCondition -> lookupPrimaryIndices(condition.fieldName, condition.value)
-            is InCondition -> computePrimaryIndices(condition.toOrCondition())
-            is OrCondition -> computePrimaryIndices(condition)
-            is AndCondition -> computePrimaryIndices(condition)
+            is Equals -> lookupPrimaryIndices(condition.fieldName, condition.value)
+            is In -> computePrimaryIndices(condition.toOr())
+            is Or -> computePrimaryIndices(condition)
+            is And -> computePrimaryIndices(condition)
             is UnsupportedCondition -> Result.Failed()
         }
     }
 
-    private fun computePrimaryIndices(orCondition: OrCondition): Result<T> {
-        val results = orCondition.conditions.map { computePrimaryIndices(it) }
+    private fun computePrimaryIndices(or: Or): Result<T> {
+        val results = or.conditions.map { computePrimaryIndices(it) }
         return if (results.filterIsInstance<Result.Failed<T>>().isNotEmpty()) {
             Result.Failed()
         } else {
@@ -34,8 +34,8 @@ class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, A
         }
     }
 
-    private fun computePrimaryIndices(andCondition: AndCondition): Result<T> {
-        val successes = andCondition.conditions.map { computePrimaryIndices(it) }.filterIsInstance<Result.Success<T>>()
+    private fun computePrimaryIndices(and: And): Result<T> {
+        val successes = and.conditions.map { computePrimaryIndices(it) }.filterIsInstance<Result.Success<T>>()
         return if (successes.isEmpty()) {
             Result.Failed()
         } else {

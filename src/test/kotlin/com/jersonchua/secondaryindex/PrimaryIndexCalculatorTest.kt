@@ -5,31 +5,31 @@ import org.junit.jupiter.api.Test
 
 internal class PrimaryIndexCalculatorTest {
     @Test
-    fun testEqualsCondition() {
-        val condition = EqualsCondition("color", "blue")
+    fun testEquals() {
+        val condition = Equals("color", "blue")
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(5, 6)), result)
     }
 
     @Test
-    fun testInCondition() {
-        val condition = InCondition("color", listOf("blue", "red"))
+    fun testIn() {
+        val condition = In("color", listOf("blue", "red"))
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(1, 3, 5, 6)), result)
     }
 
     @Test
     fun testUnIndexedField() {
-        val condition = EqualsCondition("location", "Rockaway")
+        val condition = Equals("location", "Rockaway")
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
 
     @Test
-    fun testAndCondition() {
-        val condition = AndCondition(listOf(
-            EqualsCondition("color", "blue"),
-            EqualsCondition("make", "Toyota"),
+    fun testAnd() {
+        val condition = And(listOf(
+            Equals("color", "blue"),
+            Equals("make", "Toyota"),
             UnsupportedCondition
         ))
         val result = calculator.computePrimaryIndices(condition)
@@ -37,47 +37,47 @@ internal class PrimaryIndexCalculatorTest {
     }
 
     @Test
-    fun testAndConditionPrimaryKeyNotFound() {
-        val condition = AndCondition(listOf(
-            EqualsCondition("color", "green"),
-            EqualsCondition("make", "Toyota"),
+    fun testAndPrimaryKeyNotFound() {
+        val condition = And(listOf(
+            Equals("color", "green"),
+            Equals("make", "Toyota"),
         ))
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf<Int>()), result)
     }
 
     @Test
-    fun testAndConditionFailed() {
-        val condition = AndCondition(listOf(
-            EqualsCondition("location", "Rockaway")
+    fun testAndFailed() {
+        val condition = And(listOf(
+            Equals("location", "Rockaway")
         ))
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
 
     @Test
-    fun testOrCondition() {
-        val condition = OrCondition(listOf(
-            EqualsCondition("color", "silver")
+    fun testOr() {
+        val condition = Or(listOf(
+            Equals("color", "silver")
         ))
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(2)), result)
     }
 
     @Test
-    fun testOrConditionPrimaryKeyNotFound() {
-        val condition = OrCondition(listOf(
-            EqualsCondition("color", "green"),
-            EqualsCondition("make", "Acura"),
+    fun testOrPrimaryKeyNotFound() {
+        val condition = Or(listOf(
+            Equals("color", "green"),
+            Equals("make", "Acura"),
         ))
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf<Int>()), result)
     }
 
     @Test
-    fun testOrConditionFailed() {
-        val condition = OrCondition(listOf(
-            EqualsCondition("color", "blue"),
+    fun testOrFailed() {
+        val condition = Or(listOf(
+            Equals("color", "blue"),
             UnsupportedCondition
         ))
         val result = calculator.computePrimaryIndices(condition)
