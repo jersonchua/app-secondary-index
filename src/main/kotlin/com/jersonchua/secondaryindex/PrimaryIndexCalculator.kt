@@ -1,13 +1,11 @@
 package com.jersonchua.secondaryindex
 
 /**
- * T is the primary key type
- *
- * lookupPrimaryIndices:
- *      First parameter (String) is the field name and second parameter (Any?) is the field value.
- *      lookupPrimaryIndices should return
- *          Result.Success if the field is indexed. If the value is not in the index then primaryIndices should be an empty list.
- *          Result.Failed if the field is not indexed or if an error has occurred
+ * @param T the type of the primary key
+ * @property lookupPrimaryIndices function type that accepts field name and value, and it should return
+ *      Result.Success with primary indices if field is indexed and value is in the index
+ *      Result.Success with empty primary indices if field is indexed and values is not in the index
+ *      Result.Failed if the field is not indexed, or an error occurs
  */
 class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, Any?) -> Result<T>) {
     fun computePrimaryIndices(condition: Condition): Result<T> {

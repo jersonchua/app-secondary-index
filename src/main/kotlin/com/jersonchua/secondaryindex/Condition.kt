@@ -8,21 +8,21 @@ object UnsupportedCondition : Condition
 
 data class Equals(val fieldName: String, val value: Any?) : Condition
 
-data class In(val fieldName: String, val values: List<Any?>) : Condition {
+data class In(private val fieldName: String, private val values: List<Any?>) : Condition {
     init {
         require(values.isNotEmpty())
     }
 
-    fun toOr() = Or(values.map { Equals(fieldName, it) })
+    fun toOr() = Or(*values.map { Equals(fieldName, it) }.toTypedArray())
 }
 
-data class And(val conditions: List<Condition>) : Condition {
+class And(vararg val conditions: Condition) : Condition {
     init {
         require(conditions.isNotEmpty())
     }
 }
 
-data class Or(val conditions: List<Condition>) : Condition {
+class Or(vararg val conditions: Condition) : Condition {
     init {
         require(conditions.isNotEmpty())
     }

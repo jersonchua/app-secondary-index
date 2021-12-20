@@ -27,59 +27,59 @@ internal class PrimaryIndexCalculatorTest {
 
     @Test
     fun testAnd() {
-        val condition = And(listOf(
+        val condition = And(
             Equals("color", "blue"),
             Equals("make", "Toyota"),
             UnsupportedCondition
-        ))
+        )
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(5)), result)
     }
 
     @Test
     fun testAndPrimaryKeyNotFound() {
-        val condition = And(listOf(
+        val condition = And(
             Equals("color", "green"),
             Equals("make", "Toyota"),
-        ))
+        )
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf<Int>()), result)
     }
 
     @Test
     fun testAndFailed() {
-        val condition = And(listOf(
+        val condition = And(
             Equals("location", "Rockaway")
-        ))
+        )
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
 
     @Test
     fun testOr() {
-        val condition = Or(listOf(
+        val condition = Or(
             Equals("color", "silver")
-        ))
+        )
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(2)), result)
     }
 
     @Test
     fun testOrPrimaryKeyNotFound() {
-        val condition = Or(listOf(
+        val condition = Or(
             Equals("color", "green"),
             Equals("make", "Acura"),
-        ))
+        )
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf<Int>()), result)
     }
 
     @Test
     fun testOrFailed() {
-        val condition = Or(listOf(
+        val condition = Or(
             Equals("color", "blue"),
             UnsupportedCondition
-        ))
+        )
         val result = calculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
