@@ -11,82 +11,104 @@ internal class PrimaryIndexCalculatorTest {
     @Test
     fun testEquals() {
         val condition = Equals("color", "blue")
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf(5, 6)), result)
+        assertEquals(Result.Success(setOf(5, 6)), primaryKeyCalculator.computePrimaryIndices(condition))
+    }
+
+    @Test
+    fun testEqualsWhereFieldNotIndexed() {
+        val condition = Equals("location", "Rockaway")
+        assertEquals(Result.Failed<Int>(), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     @Test
     fun testIn() {
         val condition = In("color", listOf("blue", "red"))
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf(1, 3, 5, 6)), result)
-    }
-
-    @Test
-    fun testUnIndexedField() {
-        val condition = Equals("location", "Rockaway")
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Failed<Int>(), result)
+        assertEquals(Result.Success(setOf(1, 3, 5, 6)), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     @Test
     fun testAnd() {
         val condition = And(
             Equals("color", "blue"),
-            Equals("make", "Toyota"),
-            UnsupportedCondition
+            Equals("make", "Toyota")
         )
+
         assertEquals(Result.Success(setOf(5)), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Success(setOf(5)), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+    }
+
+    /**
+     * Test "And" condition where at least one of the nested conditions derived to Result.Failed
+     */
+    @Test
+    fun testAndWhereAtLeast1Failed() {
+        val condition = And(
+            Equals("color", "blue"),
+            UnsupportedCondition // simulating Equals("make", "Toyota") where make is not in the index or an error has occurred while handling it
+        )
+
+        // in none-strict mode, the calculator can yield false positive i.e. Car with id 6 does not have make=Toyota
+        assertEquals(Result.Success(setOf(5, 6)), primaryKeyCalculator.computePrimaryIndices(condition))
         assertEquals(Result.Failed<Int>(), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
+    /**
+     * Test "And" condition where all nested conditions derived to Result.Failed
+     */
     @Test
-    fun testAndPrimaryKeyNotFound() {
-        val condition = And(
-            Equals("color", "green"),
-            Equals("make", "Toyota"),
-        )
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf<Int>()), result)
-    }
-
-    @Test
-    fun testAndFailed() {
+    fun testAndWhereAllFailed() {
         val condition = And(
             Equals("location", "Rockaway")
         )
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Failed<Int>(), result)
+        assertEquals(Result.Failed<Int>(), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>(), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+    }
+
+    /**
+     * Test "And" condition where the primary indices derived from the nested conditions do not overlap
+     */
+    @Test
+    fun testAndPrimaryKeyNotFound() {
+        val condition = And(
+            Equals("color", "red"),
+            Equals("make", "Toyota"),
+        )
+        assertEquals(Result.Success(setOf<Int>()), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Success(setOf<Int>()), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     @Test
     fun testOr() {
         val condition = Or(
             Equals("color", "silver"),
-            Equals("color", "black"),
+            Equals("color", "black")
         )
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf(2, 4)), result)
+        assertEquals(Result.Success(setOf(2, 4)), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
+    /**
+     * Test "Or" condition where at least one of the nested conditions derived to Result.Failed
+     */
     @Test
-    fun testOrPrimaryKeyNotFound() {
-        val condition = Or(
-            Equals("color", "green"),
-            Equals("make", "Acura"),
-        )
-        val result = primaryKeyCalculator.computePrimaryIndices(condition)
-        assertEquals(Result.Success(setOf<Int>()), result)
-    }
-
-    @Test
-    fun testOrFailed() {
+    fun testOrWhereAtLeast1Failed() {
         val condition = Or(
             Equals("color", "blue"),
             UnsupportedCondition
         )
         val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
+    }
+
+    /**
+     * Test "Or" condition where the primary indices derived from the nested conditions are all empty
+     */
+    @Test
+    fun testOrPrimaryKeyNotFound() {
+        val condition = Or(
+            Equals("color", "green"),
+            Equals("make", "Acura"),
+        )
+        assertEquals(Result.Success(setOf<Int>()), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     companion object {
@@ -104,7 +126,7 @@ internal class PrimaryIndexCalculatorTest {
         private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId)
         private val strictPrimaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId, strict = true)
 
-        private fun lookupCarId(fieldName:String, value: Any?): Result<Int> {
+        private fun lookupCarId(fieldName: String, value: Any?): Result<Int> {
             return if (indexedFields.contains(fieldName)) {
                 val key = "$fieldName:$value"
                 Result.Success(invertedMap.getOrDefault(key, setOf()))
