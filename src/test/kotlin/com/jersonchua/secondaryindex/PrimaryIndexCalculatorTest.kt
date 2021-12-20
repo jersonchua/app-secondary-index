@@ -128,9 +128,9 @@ internal class PrimaryIndexCalculatorTest {
         private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId)
         private val strictPrimaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId, strict = true)
 
-        private fun lookupCarId(fieldName: String, value: Any?): Result<Int> {
+        private fun lookupCarId(fieldName: String, fieldValue: Any?): Result<Int> {
             return if (indexedFields.contains(fieldName)) {
-                val key = "$fieldName:$value"
+                val key = createdInvertedMapKey(fieldName, fieldValue)
                 Result.Success(invertedMap.getOrDefault(key, setOf()))
             } else {
                 Result.Failed()
@@ -141,8 +141,10 @@ internal class PrimaryIndexCalculatorTest {
             val field = Car::class.java.getDeclaredField(fieldName)
             field.isAccessible = true
             val fieldValue = field.get(it)
-            "$fieldName:$fieldValue" to it.id
+            createdInvertedMapKey(fieldName, fieldValue) to it.id
         }
+
+        private fun createdInvertedMapKey(fieldName: String, fieldValue: Any?) = "$fieldName:$fieldValue"
     }
 }
 
