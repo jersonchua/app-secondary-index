@@ -3,9 +3,9 @@ package com.jersonchua.secondaryindex
 /**
  * @param T the type of the primary key
  * @property lookupPrimaryIndices function type that accepts field name and value, and it should return
- *      Result.Success with primary indices if field is indexed and value is in the index
- *      Result.Success with empty primary indices if field is indexed and values is not in the index
- *      Result.Failed if the field is not indexed, or an error occurs
+ *      Result.Success with primary indices if field and value are in the index
+ *      Result.Success with empty primary indices if field is in the index but the value is not
+ *      Result.Failed if the field is not in the index, or if an error occurs
  */
 class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, Any?) -> Result<T>) {
     fun computePrimaryIndices(condition: Condition): Result<T> {
@@ -48,16 +48,6 @@ class PrimaryIndexCalculator<out T>(private val lookupPrimaryIndices: (String, A
 
 sealed interface Result<out T> {
     data class Success<out T>(val primaryIndices: Set<T>) : Result<T>
-
-    /**
-     * TODO is there a better way of handling this?
-     * If we make it a data class, it will require attributes.
-     * If we make it a singleton object, we can't pass the generic type
-     */
-    class Failed<out T> : Result<T> {
-        override fun equals(other: Any?): Boolean {
-            return other is Failed<*>
-        }
-    }
+    data class Failed<out T>(val reason: String? = null) : Result<T>
 }
 
