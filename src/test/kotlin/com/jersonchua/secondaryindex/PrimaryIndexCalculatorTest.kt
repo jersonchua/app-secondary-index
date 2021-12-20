@@ -3,25 +3,29 @@ package com.jersonchua.secondaryindex
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+/**
+ * The test creates an in-memory secondary index (see the companion object for details) and uses it for testing
+ * different use cases.
+ */
 internal class PrimaryIndexCalculatorTest {
     @Test
     fun testEquals() {
         val condition = Equals("color", "blue")
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(5, 6)), result)
     }
 
     @Test
     fun testIn() {
         val condition = In("color", listOf("blue", "red"))
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(1, 3, 5, 6)), result)
     }
 
     @Test
     fun testUnIndexedField() {
         val condition = Equals("location", "Rockaway")
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
 
@@ -32,7 +36,7 @@ internal class PrimaryIndexCalculatorTest {
             Equals("make", "Toyota"),
             UnsupportedCondition
         )
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(5)), result)
     }
 
@@ -42,7 +46,7 @@ internal class PrimaryIndexCalculatorTest {
             Equals("color", "green"),
             Equals("make", "Toyota"),
         )
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf<Int>()), result)
     }
 
@@ -51,7 +55,7 @@ internal class PrimaryIndexCalculatorTest {
         val condition = And(
             Equals("location", "Rockaway")
         )
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
 
@@ -60,7 +64,7 @@ internal class PrimaryIndexCalculatorTest {
         val condition = Or(
             Equals("color", "silver")
         )
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf(2)), result)
     }
 
@@ -70,7 +74,7 @@ internal class PrimaryIndexCalculatorTest {
             Equals("color", "green"),
             Equals("make", "Acura"),
         )
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Success(setOf<Int>()), result)
     }
 
@@ -80,7 +84,7 @@ internal class PrimaryIndexCalculatorTest {
             Equals("color", "blue"),
             UnsupportedCondition
         )
-        val result = calculator.computePrimaryIndices(condition)
+        val result = primaryKeyCalculator.computePrimaryIndices(condition)
         assertEquals(Result.Failed<Int>(), result)
     }
 
@@ -96,7 +100,7 @@ internal class PrimaryIndexCalculatorTest {
 
         private val indexedFields = listOf("color", "make")
         private val invertedMap = indexedFields.flatMap { createInvertedMap(it, cars).toList() }.toMap()
-        private val calculator = PrimaryIndexCalculator(Companion::lookupCarId)
+        private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId)
 
         private fun lookupCarId(fieldName:String, value: Any?): Result<Int> {
             return if (indexedFields.contains(fieldName)) {
