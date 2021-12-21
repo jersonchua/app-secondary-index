@@ -142,7 +142,7 @@ internal class PrimaryIndexCalculatorTest {
             createdInvertedMapKey(fieldName, fieldValue) to it.id
         }
 
-        private fun createdInvertedMapKey(fieldName: String, fieldValue: Any?) = "$fieldName:$fieldValue"
+        private fun createdInvertedMapKey(fieldName: String, fieldValue: Any?) = Pair(fieldName, fieldValue)
     }
 }
 
