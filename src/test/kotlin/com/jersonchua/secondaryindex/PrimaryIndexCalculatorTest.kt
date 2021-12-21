@@ -18,7 +18,7 @@ internal class PrimaryIndexCalculatorTest {
     @Test
     fun testEqualsWhereFieldNotIndexed() {
         val condition = Equals("location", "Rockaway")
-        assertEquals(Result.Failed<Int>("location is not indexed"), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), primaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     @Test
@@ -48,7 +48,7 @@ internal class PrimaryIndexCalculatorTest {
         )
         // in none-strict mode, the calculator can yield false positive i.e. Car(6, "blue", "Honda", "Jersey City")
         assertEquals(Result.Success(setOf(5, 6)), primaryKeyCalculator.computePrimaryIndices(condition))
-        assertEquals(Result.Failed<Int>("location is not indexed"), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     /**
@@ -59,8 +59,8 @@ internal class PrimaryIndexCalculatorTest {
         val condition = And(
             Equals("location", "Rockaway")
         )
-        assertEquals(Result.Failed<Int>("location is not indexed"), primaryKeyCalculator.computePrimaryIndices(condition))
-        assertEquals(Result.Failed<Int>("location is not indexed"), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
     }
 
     /**
@@ -131,7 +131,7 @@ internal class PrimaryIndexCalculatorTest {
                 val key = createdInvertedMapKey(fieldName, fieldValue)
                 Result.Success(invertedMap.getOrDefault(key, setOf()))
             } else {
-                Result.Failed("$fieldName is not indexed")
+                Result.Failed(listOf("$fieldName is not indexed"))
             }
         }
 

@@ -27,7 +27,7 @@ class PrimaryIndexCalculator<out T>(
         val (successes, failed, _) = results.partitionByTypes<Result.Success<T>, Result.Failed<T>, Result<T>>()
 
         return if (failed.isNotEmpty()) {
-            Result.Failed(*failed.flatMap { it.reasons.toList() }.toTypedArray())
+            Result.Failed(failed.flatMap { it.reasons })
         } else {
             val primaryIndices =
                 successes.map { it.primaryIndices }.reduce { cumulativePrimaryIndices, primaryIndices ->
@@ -42,7 +42,7 @@ class PrimaryIndexCalculator<out T>(
         val (successes, failed, _) = results.partitionByTypes<Result.Success<T>, Result.Failed<T>, Result<T>>()
 
         return if ((failed.size == results.size) || (strict && failed.isNotEmpty())) {
-            Result.Failed(*failed.flatMap { it.reasons.toList() }.toTypedArray())
+            Result.Failed(failed.flatMap { it.reasons })
         } else {
             val primaryIndices =
                 successes.map { it.primaryIndices }.reduce { cumulativePrimaryIndices, primaryIndices ->
@@ -55,25 +55,6 @@ class PrimaryIndexCalculator<out T>(
 
 sealed interface Result<out T> {
     data class Success<out T>(val primaryIndices: Set<T>) : Result<T>
-    class Failed<out T>(vararg val reasons: String) : Result<T> {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as Failed<*>
-
-            if (!reasons.contentEquals(other.reasons)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return reasons.contentHashCode()
-        }
-
-        override fun toString(): String {
-            return "Failed(reasons=${reasons.contentToString()})"
-        }
-    }
+    data class Failed<out T>(val reasons: List<String> = listOf()) : Result<T>
 }
 
