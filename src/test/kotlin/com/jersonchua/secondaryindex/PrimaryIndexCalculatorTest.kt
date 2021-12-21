@@ -1,7 +1,6 @@
 package com.jersonchua.secondaryindex
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -18,7 +17,10 @@ internal class PrimaryIndexCalculatorTest {
     @Test
     fun testEqualsWhereFieldNotIndexed() {
         val condition = Equals("location", "Rockaway")
-        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), primaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(
+            Result.Failed<Int>(listOf("location is not indexed")),
+            primaryKeyCalculator.computePrimaryIndices(condition)
+        )
     }
 
     @Test
@@ -48,7 +50,10 @@ internal class PrimaryIndexCalculatorTest {
         )
         // in none-strict mode, the calculator can yield false positive i.e. Car(6, "blue", "Honda", "Jersey City")
         assertEquals(Result.Success(setOf(5, 6)), primaryKeyCalculator.computePrimaryIndices(condition))
-        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(
+            Result.Failed<Int>(listOf("location is not indexed")),
+            strictPrimaryKeyCalculator.computePrimaryIndices(condition)
+        )
     }
 
     /**
@@ -59,8 +64,14 @@ internal class PrimaryIndexCalculatorTest {
         val condition = And(
             Equals("location", "Rockaway")
         )
-        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), primaryKeyCalculator.computePrimaryIndices(condition))
-        assertEquals(Result.Failed<Int>(listOf("location is not indexed")), strictPrimaryKeyCalculator.computePrimaryIndices(condition))
+        assertEquals(
+            Result.Failed<Int>(listOf("location is not indexed")),
+            primaryKeyCalculator.computePrimaryIndices(condition)
+        )
+        assertEquals(
+            Result.Failed<Int>(listOf("location is not indexed")),
+            strictPrimaryKeyCalculator.computePrimaryIndices(condition)
+        )
     }
 
     /**
