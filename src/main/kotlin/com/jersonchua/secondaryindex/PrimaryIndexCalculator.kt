@@ -29,11 +29,7 @@ class PrimaryIndexCalculator<out T>(
         return if (failed.isNotEmpty()) {
             Result.Failed(failed.flatMap { it.reasons })
         } else {
-            val primaryIndices =
-                successes.map { it.primaryIndices }.reduce { cumulativePrimaryIndices, primaryIndices ->
-                    cumulativePrimaryIndices.union(primaryIndices)
-                }
-            Result.Success(primaryIndices)
+            Result.Success(successes.flatMap { it.primaryIndices }.toSet())
         }
     }
 
