@@ -1,16 +1,14 @@
 package com.jersonchua.secondaryindex
 
-// TODO can we get rid of "Any?" to improve type safety?
-
 /**
- * Represents the filter conditions used in retrieving the data
+ * Represents filter conditions used in retrieving the data
  *
  * If the application querying for users with name = 'John' and age >= 18, then the filter condition will be represented
  * as follows:
  *
  *  And(
  *      Equals("name", "John"),
- *      UnsupportedCondition
+ *      UnsupportedCondition    // secondary index only supports '=' and 'in' operator
  *  )
  */
 sealed interface Condition
