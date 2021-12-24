@@ -1,14 +1,12 @@
 package com.jersonchua.secondaryindex
 
 /**
- * Represents filter conditions used in retrieving the data
+ * Represents the conditions in the where-clause in SQL
  *
- * If the application querying for users with name = 'John' and age >= 18, then the filter condition will be represented
- * as follows:
- *
+ * If the SQL has (name = 'John' and age >= 18) in the where-clause, then it will be represented as follows:
  *  And(
  *      Equals("name", "John"),
- *      UnsupportedCondition    // secondary index only supports '=' and 'in' operator
+ *      UnsupportedCondition    // assumption is that the secondary index only supports '=' and 'in' operator
  *  )
  */
 sealed interface Condition
