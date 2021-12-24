@@ -6,7 +6,7 @@ package com.jersonchua.secondaryindex
  * If the SQL has (name = 'John' and age >= 18) in the where-clause, then it will be represented as follows:
  *  And(
  *      Equals("name", "John"),
- *      UnsupportedCondition    // assumption is that the secondary index only supports '=' and 'in' operator
+ *      UnsupportedCondition    // assumption is that the secondary index only supports '=', 'in' is just a variation of '='
  *  )
  */
 sealed interface Condition
