@@ -151,11 +151,14 @@ internal class PrimaryIndexCalculatorTest {
             }
         }
 
-        private fun createMapping(fieldName: String, cars: List<Car>) = cars.map {
+        private fun createMapping(fieldName: String, cars: List<Car>) : List<Pair<Pair<String, Any?>, Int>> {
             val field = Car::class.java.getDeclaredField(fieldName)
             field.isAccessible = true
-            val fieldValue = field.get(it)
-            createdInvertedMapKey(fieldName, fieldValue) to it.id
+
+            return cars.map {
+                val fieldValue = field.get(it)
+                createdInvertedMapKey(fieldName, fieldValue) to it.id
+            }
         }
 
         private fun createdInvertedMapKey(fieldName: String, fieldValue: Any?) = Pair(fieldName, fieldValue)
