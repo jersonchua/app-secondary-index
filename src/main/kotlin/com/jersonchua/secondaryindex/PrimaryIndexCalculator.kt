@@ -6,7 +6,7 @@ package com.jersonchua.secondaryindex
  *      [Success][com.jersonchua.secondaryindex.Result.Success] with primary indices if field and value are in the index
  *      [Success][com.jersonchua.secondaryindex.Result.Success] with empty primary indices if field is in the index but the value is not
  *      [Failed][com.jersonchua.secondaryindex.Result.Failed] if the field is not in the index, or if an error occurs
- * @property strict if true, all conditions must yield a set of primary keys
+ * @property strict if true, all conditions must yield a set of primary indices
  *      i.e. no UnsupportedCondition in the input and no Result.Failed returned from lookupPrimaryIndices()
  */
 class PrimaryIndexCalculator<out T>(
