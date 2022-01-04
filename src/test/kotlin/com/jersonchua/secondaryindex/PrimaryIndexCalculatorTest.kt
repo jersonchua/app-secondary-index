@@ -15,7 +15,7 @@ internal class PrimaryIndexCalculatorTest {
     }
 
     @Test
-    fun testEqualsWhereFieldNotIndexed() {
+    fun testEqualsWhereFieldIsNotIndexed() {
         val condition = Equals("location", "Rockaway")
         assertEquals(
             Result.Failed<Int>(listOf("location is not indexed")),
@@ -78,7 +78,7 @@ internal class PrimaryIndexCalculatorTest {
      * Test "And" condition where the primary indices derived from the nested conditions do not overlap
      */
     @Test
-    fun testAndPrimaryKeyNotFound() {
+    fun testAndWherePrimaryKeyNotFound() {
         val condition = And(
             Equals("color", "red"),
             Equals("make", "Toyota"),
@@ -112,7 +112,7 @@ internal class PrimaryIndexCalculatorTest {
      * Test "Or" condition where the primary indices derived from the nested conditions are all empty
      */
     @Test
-    fun testOrPrimaryKeyNotFound() {
+    fun testOrWherePrimaryKeyNotFound() {
         val condition = Or(
             Equals("color", "green"),
             Equals("make", "Acura"),
@@ -131,13 +131,18 @@ internal class PrimaryIndexCalculatorTest {
         )
 
         private val indexedFields = listOf("color", "make")
+
+        /**
+         * In real-world, this inverted map can be loaded from a NoSQL database, relational database,
+         * local disk, HDFS etc.
+         */
         private val invertedMap =
             indexedFields.flatMap { createMapping(it, cars) }.groupBy({ it.first }, { it.second })
                 .mapValues { it.value.toSet() }
-        private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId)
-        private val strictPrimaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarId, strict = true)
+        private val primaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarIds)
+        private val strictPrimaryKeyCalculator = PrimaryIndexCalculator(Companion::lookupCarIds, strict = true)
 
-        private fun lookupCarId(fieldName: String, fieldValue: Any?): Result<Int> {
+        private fun lookupCarIds(fieldName: String, fieldValue: Any?): Result<Int> {
             return if (indexedFields.contains(fieldName)) {
                 val key = createdInvertedMapKey(fieldName, fieldValue)
                 Result.Success(invertedMap.getOrDefault(key, setOf()))
